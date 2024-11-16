@@ -1,0 +1,67 @@
+/* App.css
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.full-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.flex-grow {
+  flex-grow: 1;
+}
+
+.bg-white {
+  background-color: white;
+} */
+/* 
+.song-card {
+  width: 100%;
+  max-width: 250px;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  overflow: hidden;
+}
+
+.song-card img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.song-card h3 {
+  font-size: 1rem;
+  font-weight: bold;
+  margin: 8px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.song-card p {
+  font-size: 0.9rem;
+  color: #555;
+  margin: 4px 0;
+}
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  padding: 16px;
+}
+.song-card img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+} */

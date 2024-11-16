@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Song Player</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        .input-container {
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            padding: 10px;
+            width: 300px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        audio {
+            margin-top: 20px;
+            width: 300px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>GitHub Song Player</h1>
+    <div class="input-container">
+        <input type="text" id="githubLink" placeholder="Enter GitHub file link" />
+        <button onclick="playSong()">Play Song</button>
+    </div>
+    <audio id="audioPlayer" controls>
+        Your browser does not support the audio element.
+    </audio>
+
+    <script>
+        function convertToRawLink(githubLink) {
+            // Replace 'blob' with 'raw' and remove 'github.com' to make it a direct link
+            return githubLink.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
+        }
+
+        function playSong() {
+            const githubLink = document.getElementById('githubLink').value;
+            const rawLink = convertToRawLink(githubLink);
+            const audioPlayer = document.getElementById('audioPlayer');
+            audioPlayer.src = rawLink;
+            audioPlayer.play();
+        }
+    </script>
+
+</body>
+</html>
