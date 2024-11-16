@@ -1,7 +1,3 @@
-Here's the updated README with the correction:
-
----
-
 # SoundHive 🎵
 
 **SoundHive** is a feature-rich music app built with a modern tech stack that offers users an engaging and interactive experience. It provides functionalities like liking songs, creating and managing playlists, viewing liked songs, and seamless user authentication. The app uses a JSON server for the backend and a React + Vite setup for the frontend.
@@ -114,14 +110,14 @@ soundhive/
 
 ## Screenshots 📸
 
-### 🎨 Sidebar Navigation
-![Sidebar Navigation](https://via.placeholder.com/600x400?text=Sidebar+Navigation)
+### 🎨 Home Page
+![Home Page](https://github.com/adityachandra512/song-storage/blob/main/Screenshot%20(8).png)
 
 ### ❤️ Liked Songs
-![Liked Songs](https://via.placeholder.com/600x400?text=Liked+Songs)
+![Liked Songs](https://github.com/adityachandra512/song-storage/blob/main/Screenshot%20(10).png)
 
 ### 📚 Library
-![Library](https://via.placeholder.com/600x400?text=Library)
+![Library](https://github.com/adityachandra512/song-storage/blob/main/Screenshot%20(9).png)
 
 ---
 
