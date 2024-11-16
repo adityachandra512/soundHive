@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import Sidebar from './component/sidebar';
-import MainPage from './component/mainPage';
+import MainPage from './component/mainpage';
 import SignIn from './component/signup';
 import LikedSongsPage from "./component/LikedSongsPage"; 
 import AddSongForm from './component/AddSongForm';
