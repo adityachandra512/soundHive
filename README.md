@@ -146,8 +146,10 @@ This project is licensed under the MIT License. Feel free to use, modify, and di
 
 ## Contributors 👥
 
-- **Your Name**: [GitHub Profile](https://github.com/adityachandra512)
-
+- **Aditya Chandra**: [GitHub Profile](https://github.com/adityachandra512)
+- **Satyam Maurya**: [GitHub Profile](https://github.com/SatyamMaurya7)
+- **Athul T.M**: [GitHub Profile](https://github.com/AthulTM)
+- **Avadesh kumar**: [GitHub Profile](https://github.com/adityachandra512)
 ---
 
 Enjoy building your playlists and exploring music with **SoundHive**! 🎧
