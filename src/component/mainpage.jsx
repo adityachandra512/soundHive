@@ -12,7 +12,9 @@ const MusicApp = () => {
   const [editingSong, setEditingSong] = useState(null);
   const [alert, setAlert] = useState({ show: false, message: '', type: '' });
   const [greeting, setGreeting] = useState("");
+  const [currentlyPlaying, setCurrentlyPlaying] = useState(null);
 
+  // Fetch songs on component mount
   useEffect(() => {
     fetch(`${BASE_URL}/songs`)
       .then((res) => res.json())
@@ -26,6 +28,7 @@ const MusicApp = () => {
       });
   }, []);
 
+  // Filter songs based on search term
   useEffect(() => {
     const results = songs.filter((song) =>
       Object.values(song).some((value) =>
@@ -35,21 +38,15 @@ const MusicApp = () => {
     setFilteredSongs(results);
   }, [searchTerm, songs]);
 
-  
+  // Set personalized greeting
   useEffect(() => {
-    // Retrieve the user data from local storage
     const userData = localStorage.getItem("user");
 
     if (userData) {
-      // Parse the JSON string to an object
       const user = JSON.parse(userData);
-
-      // Extract the username
       const userName = user.username;
-
-      // Get the current hour to determine the time of day
       const hour = new Date().getHours();
-      let timeGreeting = "Hello"; // Default greeting
+      let timeGreeting = "Hello";
 
       if (hour < 12) {
         timeGreeting = "Good morning";
@@ -59,14 +56,11 @@ const MusicApp = () => {
         timeGreeting = "Good evening";
       }
 
-      // Set the personalized greeting
       setGreeting(`${timeGreeting}, ${userName}`);
     } else {
-      // Default fallback if user data is not found
       setGreeting("Welcome, User");
     }
   }, []);
-
 
   const showAlert = (message, type = 'success') => {
     setAlert({ show: true, message, type });
@@ -79,6 +73,9 @@ const MusicApp = () => {
     })
       .then(() => {
         setSongs(songs.filter((song) => song.id !== id));
+        if (currentlyPlaying === id) {
+          setCurrentlyPlaying(null);
+        }
         showAlert('Song deleted successfully');
       })
       .catch((error) => {
@@ -107,12 +104,29 @@ const MusicApp = () => {
       });
   };
 
+  // New audio control handlers
+  const handlePlay = (songId) => {
+    // If the same song is clicked again while playing, pause it
+    if (currentlyPlaying === songId) {
+      setCurrentlyPlaying(null);
+    } else {
+      // If a different song is clicked, start playing it
+      setCurrentlyPlaying(songId);
+    }
+  };
+
+  const handlePause = (songId) => {
+    if (currentlyPlaying === songId) {
+      setCurrentlyPlaying(null);
+    }
+  };
+
   return (
     <div className="full-page bg-white min-h-screen">
       <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-700 animate-text">
-        {greeting}
-      </h1>
+        <h1 className="text-3xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-700 animate-text">
+          {greeting}
+        </h1>
 
         {/* Search Bar */}
         <div className="relative mb-6">
@@ -150,9 +164,12 @@ const MusicApp = () => {
               ) : (
                 <SongCard
                   song={song}
+                  isPlaying={currentlyPlaying === song.id}
+                  onPlay={() => handlePlay(song.id)}
+                  onPause={() => handlePause(song.id)}
                   onEdit={setEditingSong}
                   onDelete={handleDeleteSong}
-                  className="w-full" // Ensure card takes full width within grid
+                  className="w-full"
                 />
               )}
             </div>

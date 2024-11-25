@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Heart, Plus } from "lucide-react";
 
 const convertToRawLink = (githubLink) => {
@@ -7,7 +7,12 @@ const convertToRawLink = (githubLink) => {
     .replace("/blob/", "/");
 };
 
-const SongCard = ({ song }) => {
+const SongCard = ({ 
+  song, 
+  isPlaying, 
+  onPlay, 
+  onPause 
+}) => {
   const [isLiked, setIsLiked] = useState(false);
   const [audioError, setAudioError] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -15,26 +20,76 @@ const SongCard = ({ song }) => {
   const [playlistName, setPlaylistName] = useState("");
   const [selectedPlaylist, setSelectedPlaylist] = useState("");
   const [action, setAction] = useState("new");
+  
+  const audioRef = useRef(null);
 
   const audioSrc = song.audioUrl?.includes("github.com")
     ? convertToRawLink(song.audioUrl)
     : song.audioUrl || "";
 
+  useEffect(() => {
+    checkIfSongIsLiked();
+  }, []);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.play().catch(error => {
+          console.error("Error playing audio:", error);
+          setAudioError(true);
+        });
+      } else {
+        audioRef.current.pause();
+      }
+    }
+  }, [isPlaying]);
+
+  const checkIfSongIsLiked = async () => {
+    try {
+      const response = await fetch("http://localhost:3002/likedSongs");
+      if (response.ok) {
+        const likedSongs = await response.json();
+        const isAlreadyLiked = likedSongs.some(
+          (likedSong) => likedSong.id === song.id
+        );
+        setIsLiked(isAlreadyLiked);
+      } else {
+        console.error("Failed to fetch liked songs:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error checking liked songs:", error);
+    }
+  };
+
   const handleLike = async () => {
     try {
-      const response = await fetch("http://localhost:3002/likedSongs", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(song),
-      });
-
+      const response = await fetch("http://localhost:3002/likedSongs");
       if (response.ok) {
-        setIsLiked(true);
-        alert(`${song.title} has been added to liked songs.`);
-      } else {
-        console.error("Failed to like the song:", response.statusText);
+        const likedSongs = await response.json();
+        const isAlreadyLiked = likedSongs.some(
+          (likedSong) => likedSong.id === song.id
+        );
+
+        if (isAlreadyLiked) {
+          alert(`${song.title} is already in your liked songs.`);
+          setIsLiked(true);
+          return;
+        }
+
+        const likeResponse = await fetch("http://localhost:3002/likedSongs", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(song),
+        });
+
+        if (likeResponse.ok) {
+          setIsLiked(true);
+          alert(`${song.title} has been added to liked songs.`);
+        } else {
+          console.error("Failed to like the song:", likeResponse.statusText);
+        }
       }
     } catch (error) {
       console.error("Error liking the song:", error);
@@ -70,7 +125,6 @@ const SongCard = ({ song }) => {
       let response;
       
       if (action === "new") {
-        // Create new playlist
         response = await fetch("http://localhost:3002/playlists", {
           method: "POST",
           headers: {
@@ -82,14 +136,12 @@ const SongCard = ({ song }) => {
           }),
         });
       } else {
-        // Find the selected playlist
         const playlist = playlists.find(p => p.playlistName === selectedPlaylist);
         if (!playlist) {
           alert("Selected playlist not found.");
           return;
         }
 
-        // Update existing playlist
         response = await fetch(`http://localhost:3002/playlists/${playlist.id}`, {
           method: "PUT",
           headers: {
@@ -150,14 +202,18 @@ const SongCard = ({ song }) => {
       {audioError ? (
         <p className="text-sm text-red-500">Audio failed to load.</p>
       ) : (
-        <audio
-          controls
-          className="w-full"
-          onError={() => setAudioError(true)}
-        >
-          <source src={audioSrc} type="audio/mp3" />
-          Your browser does not support the audio element.
-        </audio>
+        <div className="w-full">
+          <audio
+            ref={audioRef}
+            src={audioSrc}
+            onError={() => setAudioError(true)}
+            onEnded={() => onPause(song.id)}
+            onPlay={() => onPlay(song.id)}
+            onPause={() => onPause(song.id)}
+            controls
+            className="w-full"
+          />
+        </div>
       )}
 
       <div className="flex flex-col space-y-1 mb-3">
@@ -180,7 +236,7 @@ const SongCard = ({ song }) => {
         aria-label="Like song"
       >
         <Heart className="h-5 w-5" />
-        <span className="ml-2">{isLiked ? "Liked" : "Like"}</span>
+        <span className="ml-2">{isLiked ? "Already Liked" : "Like"}</span>
       </button>
 
       {showModal && (
@@ -244,3 +300,4 @@ const SongCard = ({ song }) => {
 };
 
 export default SongCard;
+
