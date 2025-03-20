@@ -18,7 +18,7 @@ const PlaylistPage = () => {
   const fetchPlaylists = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:3002/playlists');
+      const response = await fetch('http://localhost:5000/api/playlists');
       if (response.ok) {
         const data = await response.json();
         setPlaylists(data);
@@ -36,7 +36,7 @@ const PlaylistPage = () => {
   // Fetch all songs
   const fetchSongs = async () => {
     try {
-      const response = await fetch('http://localhost:3002/songs');
+      const response = await fetch('http://localhost:5000/api/songs');
       if (response.ok) {
         const data = await response.json();
         setAllSongs(data);
@@ -46,6 +46,7 @@ const PlaylistPage = () => {
     }
   };
 
+  // Call both fetch functions when component mounts
   useEffect(() => {
     fetchPlaylists();
     fetchSongs();
@@ -59,7 +60,7 @@ const PlaylistPage = () => {
     }
     
     try {
-      const response = await fetch('http://localhost:3002/playlists', {
+      const response = await fetch('http://localhost:5000/api/playlists', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -91,7 +92,7 @@ const PlaylistPage = () => {
         songs: [...selectedPlaylist.songs, ...selectedSongs]
       };
 
-      const response = await fetch(`http://localhost:3002/playlists/${selectedPlaylist.id}`, {
+      const response = await fetch(`http://localhost:5000/api/playlists/${selectedPlaylist.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

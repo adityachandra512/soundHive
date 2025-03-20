@@ -46,15 +46,24 @@ const SongCard = ({
 
   const checkIfSongIsLiked = async () => {
     try {
-      const response = await fetch("http://localhost:3002/likedSongs");
+      const userData = localStorage.getItem('user');
+      if (!userData) {
+        console.log('User not logged in');
+        return;
+      }
+      
+      const user = JSON.parse(userData);
+      // Use email instead of id for user identification
+      const response = await fetch(`http://localhost:5000/api/likedSongs/${user.email}`);
+      
       if (response.ok) {
         const likedSongs = await response.json();
         const isAlreadyLiked = likedSongs.some(
-          (likedSong) => likedSong.id === song.id
+          (likedSong) => likedSong.title === song.title && likedSong.artist === song.artist
         );
         setIsLiked(isAlreadyLiked);
       } else {
-        console.error("Failed to fetch liked songs:", response.statusText);
+        throw new Error(response.statusText);
       }
     } catch (error) {
       console.error("Error checking liked songs:", error);
@@ -63,42 +72,60 @@ const SongCard = ({
 
   const handleLike = async () => {
     try {
-      const response = await fetch("http://localhost:3002/likedSongs");
-      if (response.ok) {
-        const likedSongs = await response.json();
-        const isAlreadyLiked = likedSongs.some(
-          (likedSong) => likedSong.id === song.id
-        );
+      const userData = localStorage.getItem('user');
+      if (!userData) {
+        alert('Please login to like songs');
+        return;
+      }
+      
+      const user = JSON.parse(userData);
+      const songData = {
+        id: song._id || song.id, // Use existing ID
+        title: song.title,
+        artist: song.artist,
+        genre: song.genre,
+        audioUrl: song.audioUrl,
+        userId: user.email, // Using email as userId
+        // Optional fields
+        album: song.album || '',
+        year: song.year || '',
+        image: song.image || '',
+        likedAt: new Date().toISOString()
+      };
 
-        if (isAlreadyLiked) {
-          alert(`${song.title} is already in your liked songs.`);
-          setIsLiked(true);
-          return;
-        }
+      // Validate required fields
+      const requiredFields = ['id', 'title', 'artist', 'genre', 'audioUrl', 'userId'];
+      const missingFields = requiredFields.filter(field => !songData[field]);
+      
+      if (missingFields.length > 0) {
+        throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
+      }
 
-        const likeResponse = await fetch("http://localhost:3002/likedSongs", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(song),
-        });
+      const likeResponse = await fetch("http://localhost:5000/api/likedSongs", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(songData),
+      });
 
-        if (likeResponse.ok) {
-          setIsLiked(true);
-          alert(`${song.title} has been added to liked songs.`);
-        } else {
-          console.error("Failed to like the song:", likeResponse.statusText);
-        }
+      if (likeResponse.ok) {
+        setIsLiked(true);
+        alert(`${song.title} has been added to liked songs.`);
+      } else {
+        const errorData = await likeResponse.json();
+        console.error("Like song error:", errorData);
+        throw new Error(errorData.message || "Failed to like the song");
       }
     } catch (error) {
       console.error("Error liking the song:", error);
+      alert(error.message || "Error adding song to liked songs");
     }
   };
 
   const fetchPlaylists = async () => {
     try {
-      const response = await fetch("http://localhost:3002/playlists");
+      const response = await fetch("http://localhost:5000/api/playlists");
       if (response.ok) {
         const data = await response.json();
         setPlaylists(data);
@@ -125,7 +152,7 @@ const SongCard = ({
       let response;
       
       if (action === "new") {
-        response = await fetch("http://localhost:3002/playlists", {
+        response = await fetch("http://localhost:5000/api/playlists", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -142,7 +169,7 @@ const SongCard = ({
           return;
         }
 
-        response = await fetch(`http://localhost:3002/playlists/${playlist.id}`, {
+        response = await fetch(`http://localhost:5000/api/playlists/${playlist.id}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",

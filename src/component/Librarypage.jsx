@@ -13,7 +13,7 @@ const PlaylistPage = () => {
   const fetchPlaylists = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:3002/playlists');
+      const response = await fetch('http://localhost:5000/api/playlists');
       if (response.ok) {
         const data = await response.json();
         setPlaylists(data);
@@ -31,7 +31,7 @@ const PlaylistPage = () => {
   // Fetch all songs
   const fetchSongs = async () => {
     try {
-      const response = await fetch('http://localhost:3002/songs');
+      const response = await fetch('http://localhost:5000/api/songs');
       if (response.ok) {
         const data = await response.json();
         setAllSongs(data);

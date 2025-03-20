@@ -3,7 +3,8 @@ import { Search } from 'lucide-react';
 import SongCard from './card';
 import AddSongForm from './AddSongForm';
 
-const BASE_URL = 'http://localhost:3002';
+// Update the BASE_URL constant
+const BASE_URL = 'http://localhost:5000/api';
 
 const MusicApp = () => {
   const [songs, setSongs] = useState([]);
@@ -13,26 +14,46 @@ const MusicApp = () => {
   const [alert, setAlert] = useState({ show: false, message: '', type: '' });
   const [greeting, setGreeting] = useState("");
   const [currentlyPlaying, setCurrentlyPlaying] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Fetch songs on component mount
   useEffect(() => {
+    setIsLoading(true);
     fetch(`${BASE_URL}/songs`)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! Status: ${res.status}`);
+        }
+        return res.json();
+      })
       .then((data) => {
-        setSongs(data);
-        setFilteredSongs(data);
+        // Ensure data is an array
+        const songsArray = Array.isArray(data) ? data : [];
+        setSongs(songsArray);
+        setFilteredSongs(songsArray);
+        setIsLoading(false);
       })
       .catch((error) => {
         console.error('Error fetching songs:', error);
         showAlert('Error fetching songs', 'error');
+        setError(error.message);
+        setSongs([]);
+        setFilteredSongs([]);
+        setIsLoading(false);
       });
   }, []);
 
   // Filter songs based on search term
   useEffect(() => {
+    if (!Array.isArray(songs)) {
+      setFilteredSongs([]);
+      return;
+    }
+    
     const results = songs.filter((song) =>
       Object.values(song).some((value) =>
-        value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+        value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
       )
     );
     setFilteredSongs(results);
@@ -40,26 +61,52 @@ const MusicApp = () => {
 
   // Set personalized greeting
   useEffect(() => {
-    const userData = localStorage.getItem("user");
+    const fetchUserInfo = async () => {
+      try {
+        const userData = localStorage.getItem("user");
+        if (!userData) {
+          setGreeting("Welcome, Guest");
+          return;
+        }
 
-    if (userData) {
-      const user = JSON.parse(userData);
-      const userName = user.username;
-      const hour = new Date().getHours();
-      let timeGreeting = "Hello";
+        const user = JSON.parse(userData);
+        const response = await fetch(`${BASE_URL}/users`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
 
-      if (hour < 12) {
-        timeGreeting = "Good morning";
-      } else if (hour < 18) {
-        timeGreeting = "Good afternoon";
-      } else {
-        timeGreeting = "Good evening";
+        if (response.ok) {
+          const users = await response.json();
+          const userInfo = users.find(u => u.email === user.email);
+          
+          if (userInfo) {
+            const hour = new Date().getHours();
+            let timeGreeting = "Hello";
+
+            if (hour < 12) {
+              timeGreeting = "Good morning";
+            } else if (hour < 18) {
+              timeGreeting = "Good afternoon";
+            } else {
+              timeGreeting = "Good evening";
+            }
+
+            setGreeting(`${timeGreeting}, ${userInfo.username}`);
+          } else {
+            setGreeting("Welcome, Guest");
+          }
+        } else {
+          setGreeting("Welcome, Guest");
+        }
+      } catch (error) {
+        console.error('Error fetching user info:', error);
+        setGreeting("Welcome, Guest");
       }
+    };
 
-      setGreeting(`${timeGreeting}, ${userName}`);
-    } else {
-      setGreeting("Welcome, User");
-    }
+    fetchUserInfo();
   }, []);
 
   const showAlert = (message, type = 'success') => {
@@ -67,10 +114,17 @@ const MusicApp = () => {
     setTimeout(() => setAlert({ show: false, message: '', type: '' }), 3000);
   };
 
+  // Update delete handler
   const handleDeleteSong = (id) => {
     fetch(`${BASE_URL}/songs/${id}`, {
       method: 'DELETE',
     })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.text();
+      })
       .then(() => {
         setSongs(songs.filter((song) => song.id !== id));
         if (currentlyPlaying === id) {
@@ -84,6 +138,7 @@ const MusicApp = () => {
       });
   };
 
+  // Update update handler
   const handleUpdateSong = () => {
     fetch(`${BASE_URL}/songs/${editingSong.id}`, {
       method: 'PUT',
@@ -92,7 +147,12 @@ const MusicApp = () => {
       },
       body: JSON.stringify(editingSong),
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! Status: ${res.status}`);
+        }
+        return res.json();
+      })
       .then((updatedSong) => {
         setSongs(songs.map((song) => (song.id === updatedSong.id ? updatedSong : song)));
         setEditingSong(null);
@@ -140,41 +200,68 @@ const MusicApp = () => {
           />
         </div>
 
+        {/* Loading, Error and Empty States */}
+        {isLoading && (
+          <div className="text-center py-10">
+            <p className="text-gray-500">Loading songs...</p>
+          </div>
+        )}
+
+        {error && !isLoading && (
+          <div className="text-center py-10">
+            <p className="text-red-500">Error loading songs: {error}</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
+        {!isLoading && !error && filteredSongs.length === 0 && (
+          <div className="text-center py-10">
+            <p className="text-gray-500">No songs found. Try a different search term or add some songs.</p>
+          </div>
+        )}
+
         {/* Songs List Container */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5 py-5">
-          {filteredSongs.map((song) => (
-            <div key={song.id}>
-              {editingSong?.id === song.id ? (
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  {['title', 'artist', 'album', 'genre', 'year'].map((field) => (
-                    <input
-                      key={field}
-                      className="p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      value={editingSong[field]}
-                      onChange={(e) => setEditingSong({ ...editingSong, [field]: e.target.value })}
-                    />
-                  ))}
-                  <button
-                    className="col-span-2 p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-                    onClick={handleUpdateSong}
-                  >
-                    Update
-                  </button>
-                </div>
-              ) : (
-                <SongCard
-                  song={song}
-                  isPlaying={currentlyPlaying === song.id}
-                  onPlay={() => handlePlay(song.id)}
-                  onPause={() => handlePause(song.id)}
-                  onEdit={setEditingSong}
-                  onDelete={handleDeleteSong}
-                  className="w-full"
-                />
-              )}
-            </div>
-          ))}
-        </div>
+        {!isLoading && !error && filteredSongs.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5 py-5">
+            {filteredSongs.map((song) => (
+              <div key={song.id}>
+                {editingSong?.id === song.id ? (
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    {['title', 'artist', 'album', 'genre', 'year'].map((field) => (
+                      <input
+                        key={field}
+                        className="p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        value={editingSong[field] || ''}
+                        onChange={(e) => setEditingSong({ ...editingSong, [field]: e.target.value })}
+                      />
+                    ))}
+                    <button
+                      className="col-span-2 p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                      onClick={handleUpdateSong}
+                    >
+                      Update
+                    </button>
+                  </div>
+                ) : (
+                  <SongCard
+                    song={song}
+                    isPlaying={currentlyPlaying === song.id}
+                    onPlay={() => handlePlay(song.id)}
+                    onPause={() => handlePause(song.id)}
+                    onEdit={setEditingSong}
+                    onDelete={handleDeleteSong}
+                    className="w-full"
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Alert Message */}

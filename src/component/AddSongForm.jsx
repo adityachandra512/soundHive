@@ -18,7 +18,7 @@ const AddSongPage = () => {
 
   // Fetch songs from database
   useEffect(() => {
-    fetch("http://localhost:3002/songs")
+    fetch("http://localhost:5000/api/songs")
       .then((response) => response.json())
       .then((data) => setSongs(data))
       .catch((error) => console.error("Error fetching songs:", error));
@@ -35,8 +35,8 @@ const AddSongPage = () => {
     e.preventDefault();
     try {
       const url = editMode
-        ? `http://localhost:3002/songs/${editingSongId}`
-        : "http://localhost:3002/songs";
+        ? `http://localhost:5000/api/songs/${editingSongId}`
+        : "http://localhost:5000/api/songs";
       const method = editMode ? "PUT" : "POST";
 
       const response = await fetch(url, {
@@ -65,7 +65,7 @@ const AddSongPage = () => {
         setEditingSongId(null);
 
         // Refresh songs
-        fetch("http://localhost:3002/songs")
+        fetch("http://localhost:5000/api/songs")
           .then((response) => response.json())
           .then((data) => setSongs(data));
       } else {
@@ -79,7 +79,7 @@ const AddSongPage = () => {
   // Handle deleting a song
   const handleDelete = async (id) => {
     try {
-      const response = await fetch(`http://localhost:3002/songs/${id}`, {
+      const response = await fetch(`http://localhost:5000/api/songs/${id}`, {
         method: "DELETE",
       });
 
