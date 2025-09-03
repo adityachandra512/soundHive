@@ -103,12 +103,9 @@ python app.py
    - Create playlists
    - Like and save favorite tracks
 
-## Contributors 👥
+## Develop By  👥
 
 - **Aditya Chandra**: [GitHub Profile](https://github.com/adityachandra512)
-- **Satyam Maurya**: [GitHub Profile](https://github.com/SatyamMaurya7)
-- **Athul T.M**: [GitHub Profile](https://github.com/AthulTM)
-- **Avadesh kumar**: [GitHub Profile](https://github.com/adityachandra512)
 ---
 
 ## 📄 License
@@ -117,7 +114,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## 📞 Contact
 
-Your Name - [adityachandra419@gmail.com]
+Email - [adityachandra419@gmail.com]
 
 Project Link: [https://github.com/adityachandra512/soundHive](https://github.com/adityachandra512/soundHive)
 
