@@ -75,23 +75,23 @@ const PlaylistPage = () => {
           </button>
           <div className="mt-4">
             <h2 className="text-3xl font-bold text-gray-800">
-              {selectedPlaylist.playlistName}
+              {selectedPlaylist?.playlistName || 'Untitled Playlist'}
             </h2>
             <p className="text-gray-600 mt-2">
-              {selectedPlaylist.songs.length}{' '}
-              {selectedPlaylist.songs.length === 1 ? 'song' : 'songs'}
+              {selectedPlaylist?.songs?.length || 0}{' '}
+              {(selectedPlaylist?.songs?.length || 0) === 1 ? 'song' : 'songs'}
             </p>
           </div>
         </div>
 
-        {selectedPlaylist.songs.length === 0 ? (
+        {(selectedPlaylist?.songs?.length || 0) === 0 ? (
           <div className="text-center text-gray-600 py-12">
             No songs in this playlist yet.
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {selectedPlaylist.songs.map((song) => (
-              <SongCard key={song.id} song={song} />
+            {(selectedPlaylist?.songs || []).map((song) => (
+              <SongCard key={song?.id || `song-${(selectedPlaylist?.songs || []).indexOf(song)}`} song={song} />
             ))}
           </div>
         )}
@@ -111,22 +111,22 @@ const PlaylistPage = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-12">
           {playlists.map((playlist) => (
             <div
-              key={playlist.id}
+              key={playlist?.id || `playlist-${playlists.indexOf(playlist)}`}
               onClick={() => setSelectedPlaylist(playlist)}
               className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 p-6 cursor-pointer"
             >
               <div className="flex flex-col items-center space-y-4">
                 <div className="w-32 h-32 bg-gradient-to-br from-blue-400 to-purple-500 rounded-lg flex items-center justify-center">
                   <span className="text-4xl text-white">
-                    {playlist.playlistName.charAt(0).toUpperCase()}
+                    {(playlist?.playlistName || 'Untitled').charAt(0).toUpperCase()}
                   </span>
                 </div>
                 <h3 className="text-xl font-semibold text-gray-800">
-                  {playlist.playlistName}
+                  {playlist?.playlistName || 'Untitled Playlist'}
                 </h3>
                 <p className="text-gray-600">
-                  {playlist.songs.length}{' '}
-                  {playlist.songs.length === 1 ? 'song' : 'songs'}
+                  {playlist?.songs?.length || 0}{' '}
+                  {(playlist?.songs?.length || 0) === 1 ? 'song' : 'songs'}
                 </p>
               </div>
             </div>
@@ -137,7 +137,7 @@ const PlaylistPage = () => {
       <h2 className="text-3xl font-bold text-gray-800 mb-4">All Songs</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {allSongs.map((song) => (
-          <SongCard key={song.id} song={song} />
+          <SongCard key={song?.id || `song-${allSongs.indexOf(song)}`} song={song} />
         ))}
       </div>
     </div>

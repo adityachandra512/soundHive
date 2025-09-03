@@ -113,8 +113,8 @@ const PlaylistPage = () => {
   };
 
   const filteredSongs = allSongs.filter(song =>
-    song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    song.artist.toLowerCase().includes(searchTerm.toLowerCase())
+    (song?.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (song?.artist || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Song selection form component
@@ -157,24 +157,24 @@ const PlaylistPage = () => {
         <div className="space-y-2 mb-4">
           {filteredSongs.map(song => (
             <div
-              key={song.id}
+              key={song?.id || `filtered-song-${filteredSongs.indexOf(song)}`}
               className="flex items-center p-2 hover:bg-gray-100 rounded"
             >
               <input
                 type="checkbox"
-                checked={selectedSongs.some(s => s.id === song.id)}
+                checked={selectedSongs.some(s => s?.id === song?.id)}
                 onChange={() => {
                   setSelectedSongs(prev =>
-                    prev.some(s => s.id === song.id)
-                      ? prev.filter(s => s.id !== song.id)
+                    prev.some(s => s?.id === song?.id)
+                      ? prev.filter(s => s?.id !== song?.id)
                       : [...prev, song]
                   );
                 }}
                 className="mr-3"
               />
               <div>
-                <div className="font-medium">{song.title}</div>
-                <div className="text-sm text-gray-600">{song.artist}</div>
+                <div className="font-medium">{song?.title || 'Unknown Title'}</div>
+                <div className="text-sm text-gray-600">{song?.artist || 'Unknown Artist'}</div>
               </div>
             </div>
           ))}
@@ -199,26 +199,32 @@ const PlaylistPage = () => {
   );
 
   // Playlist card component
-  const PlaylistCard = ({ playlist }) => (
-    <div
-      onClick={() => setSelectedPlaylist(playlist)}
-      className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 p-6 cursor-pointer"
-    >
-      <div className="flex flex-col items-center space-y-4">
-        <div className="w-32 h-32 bg-gradient-to-br from-blue-400 to-purple-500 rounded-lg flex items-center justify-center">
-          <span className="text-4xl text-white">
-            {playlist.playlistName.charAt(0).toUpperCase()}
-          </span>
+  const PlaylistCard = ({ playlist }) => {
+    // Add safety checks for undefined properties
+    const playlistName = playlist?.playlistName || 'Untitled Playlist';
+    const songsCount = playlist?.songs?.length || 0;
+    
+    return (
+      <div
+        onClick={() => setSelectedPlaylist(playlist)}
+        className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 p-6 cursor-pointer"
+      >
+        <div className="flex flex-col items-center space-y-4">
+          <div className="w-32 h-32 bg-gradient-to-br from-blue-400 to-purple-500 rounded-lg flex items-center justify-center">
+            <span className="text-4xl text-white">
+              {playlistName.charAt(0).toUpperCase()}
+            </span>
+          </div>
+          <h3 className="text-xl font-semibold text-gray-800">
+            {playlistName}
+          </h3>
+          <p className="text-gray-600">
+            {songsCount} {songsCount === 1 ? 'song' : 'songs'}
+          </p>
         </div>
-        <h3 className="text-xl font-semibold text-gray-800">
-          {playlist.playlistName}
-        </h3>
-        <p className="text-gray-600">
-          {playlist.songs.length} {playlist.songs.length === 1 ? 'song' : 'songs'}
-        </p>
       </div>
-    </div>
-  );
+    );
+  };
 
   if (loading) {
     return (
@@ -250,10 +256,10 @@ const PlaylistPage = () => {
           <div className="flex justify-between items-center mt-4">
             <div>
               <h2 className="text-3xl font-bold text-gray-800">
-                {selectedPlaylist.playlistName}
+                {selectedPlaylist?.playlistName || 'Untitled Playlist'}
               </h2>
               <p className="text-gray-600 mt-2">
-                {selectedPlaylist.songs.length} {selectedPlaylist.songs.length === 1 ? 'song' : 'songs'}
+                {selectedPlaylist?.songs?.length || 0} {(selectedPlaylist?.songs?.length || 0) === 1 ? 'song' : 'songs'}
               </p>
             </div>
             <button
@@ -266,14 +272,14 @@ const PlaylistPage = () => {
           </div>
         </div>
 
-        {selectedPlaylist.songs.length === 0 ? (
+        {(selectedPlaylist?.songs?.length || 0) === 0 ? (
           <div className="text-center text-gray-600 py-12">
             No songs in this playlist yet.
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {selectedPlaylist.songs.map((song) => (
-              <SongCard key={song.id} song={song} />
+            {(selectedPlaylist?.songs || []).map((song) => (
+              <SongCard key={song?.id || `song-${(selectedPlaylist?.songs || []).indexOf(song)}`} song={song} />
             ))}
           </div>
         )}
@@ -313,7 +319,10 @@ const PlaylistPage = () => {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {playlists.map((playlist) => (
-            <PlaylistCard key={playlist.id} playlist={playlist} />
+            <PlaylistCard 
+              key={playlist.id || `playlist-${playlists.indexOf(playlist)}`} 
+              playlist={playlist} 
+            />
           ))}
         </div>
       )}
