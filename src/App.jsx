@@ -22,7 +22,6 @@ const MainLayout = () => {
 
   return (
     <div className="flex h-screen overflow-hidden">
-      {/* Show Sidebar on specific pages */}
       {['/', '/likedSongs', '/AddSongForm', '/playlists','/library','/moodmode'].includes(location.pathname) && <Sidebar />}
 
       <main className="flex-1 overflow-y-auto bg-gray-100">
@@ -34,7 +33,6 @@ const MainLayout = () => {
           <Route path="/playlists" element={<PlaylistPage />} />
           <Route path="/library" element={<LibraryPage />} />
           <Route path="/moodmode" element={<MoodMode />} />
-          {/* Add more routes as needed */}
         </Routes>
       </main>
     </div>
